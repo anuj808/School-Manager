@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
+      MYSQL_DATABASE: ${DB_NAME:-school_erp}
+      MYSQL_USER: ${DB_USER:-erp_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-erppass}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - erp_net
+    # No exposed ports to host for security
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_USER=${DB_USER:-erp_user}
+      - DB_PASSWORD=${DB_PASSWORD:-erppass}
+      - DB_NAME=${DB_NAME:-school_erp}
+      - JWT_SECRET=${JWT_SECRET:-super_secret_jwt_key_prod}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-super_secret_refresh_key_prod}
+      - CORS_ORIGIN=https://your-production-domain.com
+    depends_on:
+      - db
+    networks:
+      - erp_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - erp_net
+
+networks:
+  erp_net:
+    driver: bridge
+
+volumes:
+  db_data:
