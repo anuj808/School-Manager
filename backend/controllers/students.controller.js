@@ -1,5 +1,5 @@
 const { Student, User, Parent, Class } = require('../models');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 
 exports.getStudents = async (req, res) => {

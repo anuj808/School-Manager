@@ -1,5 +1,5 @@
 const { User, School } = require('../models');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 exports.getSchoolUsers = async (req, res) => {
   try {

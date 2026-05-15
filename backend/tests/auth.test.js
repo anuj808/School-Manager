@@ -1,7 +1,7 @@
 const request = require('supertest');
 const app = require('../index');
 const db = require('../models');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 beforeAll(async () => {
   // Sync DB in memory / test db
