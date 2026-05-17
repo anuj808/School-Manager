@@ -186,30 +186,21 @@ module.exports = app;
 // ✅ Start server
 if (require.main === module) {
   const { sequelize } = require('./models');
-  const { Umzug, SequelizeStorage } = require('umzug');
-  const path = require('path');
-
-  const umzug = new Umzug({
-    migrations: {
-      glob: path.join(__dirname, 'migrations/*.js'),
-    },
-    context: sequelize.getQueryInterface(),
-    storage: new SequelizeStorage({ sequelize }),
-    logger: console,
-  });
+  const { execSync } = require('child_process');
 
   sequelize.authenticate()
     .then(async () => {
       console.log('✅ Database connected');
       
-      // Auto-run pending migrations
-      const pending = await umzug.pending();
-      if (pending.length > 0) {
-        console.log(`🔄 Running ${pending.length} pending migrations...`);
-        await umzug.up();
+      try {
+        console.log('🔄 Running migrations...');
+        execSync('npx sequelize-cli db:migrate', { 
+          stdio: 'inherit',
+          cwd: __dirname
+        });
         console.log('✅ Migrations completed');
-      } else {
-        console.log('✅ No pending migrations');
+      } catch (err) {
+        console.error('❌ Migration error:', err.message);
       }
 
       app.listen(port, () => {
@@ -218,7 +209,7 @@ if (require.main === module) {
       });
     })
     .catch((err) => {
-      console.error('❌ Startup failed:', err.message);
+      console.error('❌ Database connection failed:', err.message);
       process.exit(1);
     });
 }
