@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
-import { Plus, Building2, Users, Settings, LogOut, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Plus, Building2, Users, Settings, LogOut, Loader2, CheckCircle } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
@@ -10,7 +10,19 @@ export default function SuperAdminDashboard() {
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ school_code: '', name: '', address: '', academic_year: '2026-2027' });
+  const [successModal, setSuccessModal] = useState(null);
+  
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    city: '', 
+    state: '',
+    contact_email: '',
+    contact_phone: '',
+    academic_year: '2026-2027',
+    admin_username: '',
+    admin_password: '',
+    plan: 'Free Trial'
+  });
 
   useEffect(() => {
     fetchSchools();
@@ -29,13 +41,27 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const handleNameChange = (e) => {
+    const val = e.target.value;
+    const suggestedUsername = val.toLowerCase().replace(/[^a-z0-9]/g, '') + '_admin';
+    setFormData(prev => ({
+      ...prev,
+      name: val,
+      admin_username: suggestedUsername
+    }));
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/schools', formData);
+      const res = await api.post('/admin/schools', formData);
       setShowModal(false);
+      setSuccessModal(res.data.message || `School created successfully!`);
       fetchSchools();
-      setFormData({ school_code: '', name: '', address: '', academic_year: '2026-2027' });
+      setFormData({ 
+        name: '', city: '', state: '', contact_email: '', contact_phone: '', 
+        academic_year: '2026-2027', admin_username: '', admin_password: '', plan: 'Free Trial' 
+      });
     } catch (error) {
       alert(error.response?.data?.message || 'Failed to create school');
     }
@@ -52,15 +78,15 @@ export default function SuperAdminDashboard() {
           ERP Platform
         </div>
         <nav className="flex-1 p-4 space-y-2">
-          <a href="#" className="flex items-center gap-3 bg-indigo-900 p-3 rounded-lg text-indigo-100 shadow-sm border border-indigo-800">
+          <Link to="/admin/dashboard" className="flex items-center gap-3 bg-indigo-900 p-3 rounded-lg text-indigo-100 shadow-sm border border-indigo-800">
             <Building2 size={20} /> Registered Schools
-          </a>
-          <a href="#" className="flex items-center gap-3 hover:bg-indigo-900 p-3 rounded-lg text-indigo-300 transition-colors">
+          </Link>
+          <Link to="/admin/users" className="flex items-center gap-3 hover:bg-indigo-900 p-3 rounded-lg text-indigo-300 transition-colors">
             <Users size={20} /> Platform Users
-          </a>
-          <a href="#" className="flex items-center gap-3 hover:bg-indigo-900 p-3 rounded-lg text-indigo-300 transition-colors">
+          </Link>
+          <Link to="/admin/settings" className="flex items-center gap-3 hover:bg-indigo-900 p-3 rounded-lg text-indigo-300 transition-colors">
             <Settings size={20} /> Global Settings
-          </a>
+          </Link>
         </nav>
         <div className="p-4 border-t border-indigo-900">
           <button onClick={logout} className="flex items-center gap-3 w-full p-3 rounded-lg text-red-300 hover:bg-red-500 hover:text-white transition-colors">
@@ -151,29 +177,82 @@ export default function SuperAdminDashboard() {
       {/* Create School Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all">
             <div className="bg-indigo-600 p-6 text-white border-b border-indigo-700">
               <h3 className="text-xl font-bold">Register New School</h3>
               <p className="text-indigo-200 text-sm mt-1">Create a new isolated tenant environment.</p>
             </div>
             <form onSubmit={handleCreate} className="p-6 space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">School Identifier Code</label>
-                <input required type="text" value={formData.school_code} onChange={e => setFormData({...formData, school_code: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow" placeholder="e.g. SCH-002" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">School Name</label>
+                  <input required type="text" value={formData.name} onChange={handleNameChange} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow" placeholder="e.g. Springfield Elementary" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">City</label>
+                  <input required type="text" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow" placeholder="e.g. New York" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">State</label>
+                  <input required type="text" value={formData.state} onChange={e => setFormData({...formData, state: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow" placeholder="e.g. NY" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Contact Email</label>
+                  <input required type="email" value={formData.contact_email} onChange={e => setFormData({...formData, contact_email: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow" placeholder="admin@school.edu" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Contact Phone</label>
+                  <input required type="text" value={formData.contact_phone} onChange={e => setFormData({...formData, contact_phone: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow" placeholder="+1 234 567 8900" />
+                </div>
+                <div className="col-span-2 border-t pt-4 mt-2">
+                  <h4 className="font-semibold text-gray-900 mb-4">Initial Admin Account</h4>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Admin Username</label>
+                  <input required type="text" value={formData.admin_username} onChange={e => setFormData({...formData, admin_username: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow" placeholder="Suggested username" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Admin Password</label>
+                  <input required type="text" value={formData.admin_password} onChange={e => setFormData({...formData, admin_password: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow" placeholder="Initial password" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Subscription Plan</label>
+                  <select required value={formData.plan} onChange={e => setFormData({...formData, plan: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option>Free Trial</option>
+                    <option>Starter</option>
+                    <option>Growth</option>
+                    <option>Pro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Academic Year</label>
+                  <input required type="text" value={formData.academic_year} onChange={e => setFormData({...formData, academic_year: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Full School Name</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow" placeholder="e.g. Springfield Elementary" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Registered Address</label>
-                <input type="text" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow" placeholder="123 Education Lane..." />
-              </div>
-              <div className="pt-2 flex gap-3">
+              <div className="pt-4 flex gap-3 border-t">
                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 font-semibold transition-colors">Cancel</button>
                 <button type="submit" className="flex-1 px-4 py-2.5 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 font-semibold shadow-md transition-all active:scale-95">Register Tenant</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {successModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all text-center p-8">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle size={32} className="text-green-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Success!</h3>
+            <p className="text-gray-600 mb-6">{successModal}</p>
+            <button 
+              onClick={() => setSuccessModal(null)}
+              className="w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-lg hover:bg-indigo-700 transition"
+            >
+              Continue
+            </button>
           </div>
         </div>
       )}

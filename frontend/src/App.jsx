@@ -6,6 +6,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import SchoolLayout from './components/SchoolLayout';
 import SuperAdminDashboard from './pages/admin/SuperAdminDashboard';
 import SchoolDetail from './pages/admin/SchoolDetail';
+import PlatformUsers from './pages/admin/PlatformUsers';
+import GlobalSettings from './pages/admin/GlobalSettings';
 import StudentList from './pages/students/StudentList';
 import StudentForm from './pages/students/StudentForm';
 import StudentProfile from './pages/students/StudentProfile';
@@ -83,6 +85,8 @@ function App() {
           <Route element={<ProtectedRoute allowedRoles={['super_admin']} />}>
             <Route path="/admin/dashboard" element={<SuperAdminDashboard />} />
             <Route path="/admin/schools/:id" element={<SchoolDetail />} />
+            <Route path="/admin/users" element={<PlatformUsers />} />
+            <Route path="/admin/settings" element={<GlobalSettings />} />
           </Route>
           
           {/* Admin & Teacher Routes */}

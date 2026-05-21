@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
-import { ArrowLeft, Plus, Users, Shield, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Users, Shield, Loader2, Info, CreditCard, Settings as SettingsIcon } from 'lucide-react';
 
 export default function SchoolDetail() {
   const { id } = useParams();
@@ -10,6 +10,7 @@ export default function SchoolDetail() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('users');
   const [formData, setFormData] = useState({
     full_name: '',
     username: '',
@@ -82,71 +83,119 @@ export default function SchoolDetail() {
             </h1>
             <p className="text-gray-500 mt-1">Manage users and settings for this school instance.</p>
           </div>
-          <div className="flex gap-3">
-            <button 
-              onClick={handleSeedUsers}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-green-700 transition-colors font-medium text-sm"
-            >
-              Create Test Users
-            </button>
-            <button 
-              onClick={() => setShowModal(true)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 hover:bg-indigo-700 transition-colors font-medium text-sm"
-            >
-              <Plus size={18} /> Add User
-            </button>
-          </div>
+          {activeTab === 'users' && (
+            <div className="flex gap-3">
+              <button 
+                onClick={handleSeedUsers}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-green-700 transition-colors font-medium text-sm"
+              >
+                Create Test Users
+              </button>
+              <button 
+                onClick={() => setShowModal(true)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-sm flex items-center gap-2 hover:bg-indigo-700 transition-colors font-medium text-sm"
+              >
+                <Plus size={18} /> Add User
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="p-6">
           <div className="border-b border-gray-200 mb-6">
             <nav className="-mb-px flex space-x-8">
-              <a href="#" className="border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2">
+              <button 
+                onClick={() => setActiveTab('overview')} 
+                className={`${activeTab === 'overview' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+              >
+                <Info size={18} /> Overview
+              </button>
+              <button 
+                onClick={() => setActiveTab('users')} 
+                className={`${activeTab === 'users' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+              >
                 <Users size={18} /> Users
-              </a>
+              </button>
+              <button 
+                onClick={() => setActiveTab('subscription')} 
+                className={`${activeTab === 'subscription' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+              >
+                <CreditCard size={18} /> Subscription
+              </button>
+              <button 
+                onClick={() => setActiveTab('settings')} 
+                className={`${activeTab === 'settings' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+              >
+                <SettingsIcon size={18} /> Settings
+              </button>
             </nav>
           </div>
 
           {loading ? (
             <div className="flex justify-center py-12"><Loader2 className="animate-spin text-indigo-600 h-8 w-8" /></div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
-                    <th className="px-6 py-3 font-semibold rounded-tl-lg">Username</th>
-                    <th className="px-6 py-3 font-semibold">Role</th>
-                    <th className="px-6 py-3 font-semibold">Email</th>
-                    <th className="px-6 py-3 font-semibold rounded-tr-lg">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {users.map(u => (
-                    <tr key={u.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-gray-900">{u.username}</td>
-                      <td className="px-6 py-4">
-                        <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                          {u.role.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">{u.email || '-'}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${u.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {u.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                  {users.length === 0 && (
-                    <tr>
-                      <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                        No users found for this school.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <>
+              {activeTab === 'overview' && (
+                <div className="py-8 text-center text-gray-500">
+                  <h3 className="text-xl font-medium text-gray-700 mb-2">Overview</h3>
+                  <p>School details and quick stats (students, teachers, classes) will appear here.</p>
+                </div>
+              )}
+
+              {activeTab === 'users' && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 font-semibold rounded-tl-lg">Username</th>
+                        <th className="px-6 py-3 font-semibold">Role</th>
+                        <th className="px-6 py-3 font-semibold">Email</th>
+                        <th className="px-6 py-3 font-semibold rounded-tr-lg">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {users.map(u => (
+                        <tr key={u.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 font-medium text-gray-900">{u.username}</td>
+                          <td className="px-6 py-4">
+                            <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                              {u.role.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-gray-600">{u.email || '-'}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${u.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                              {u.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                      {users.length === 0 && (
+                        <tr>
+                          <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                            No users found for this school.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {activeTab === 'subscription' && (
+                <div className="py-8 text-center text-gray-500">
+                  <h3 className="text-xl font-medium text-gray-700 mb-2">Subscription Details</h3>
+                  <p>Current plan, trial end date, and change plan button will appear here.</p>
+                </div>
+              )}
+
+              {activeTab === 'settings' && (
+                <div className="py-8 text-center text-gray-500">
+                  <h3 className="text-xl font-medium text-gray-700 mb-2">School Settings</h3>
+                  <p>Suspend school toggle and delete school button will appear here.</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

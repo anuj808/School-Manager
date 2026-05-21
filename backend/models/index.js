@@ -397,4 +397,11 @@ db.Student.hasOne(db.TransportAllocation, { foreignKey: 'student_id' });
 db.TransportAllocation.belongsTo(db.TransportRoute, { foreignKey: 'route_id' });
 db.TransportRoute.hasMany(db.TransportAllocation, { foreignKey: 'route_id' });
 
+db.PlatformSetting = sequelize.define('PlatformSetting', {
+  key: { type: DataTypes.STRING, unique: true, allowNull: false },
+  value: { type: DataTypes.TEXT },
+  updated_by: { type: DataTypes.INTEGER }
+}, { tableName: 'platform_settings' });
+
 module.exports = db;
+
