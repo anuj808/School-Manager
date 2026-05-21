@@ -11,14 +11,24 @@ exports.login = async (req, res) => {
   const { school_id, username, password } = req.body;
 
   try {
-    const school = await School.findOne({ where: { school_code: school_id, is_active: true } });
-    if (!school) {
-      return res.status(401).json({ success: false, message: 'Invalid or inactive school ID' });
-    }
+    let user;
+    let school = null;
 
-    const user = await User.findOne({ where: { school_id: school.id, username, is_active: true } });
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    if (school_id === 'SUPERADMIN') {
+      user = await User.findOne({ where: { username, is_active: true, role: 'super_admin' } });
+      if (!user) {
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      }
+    } else {
+      school = await School.findOne({ where: { school_code: school_id, is_active: true } });
+      if (!school) {
+        return res.status(401).json({ success: false, message: 'Invalid or inactive school ID' });
+      }
+
+      user = await User.findOne({ where: { school_id: school.id, username, is_active: true } });
+      if (!user) {
+        return res.status(401).json({ success: false, message: 'Invalid credentials' });
+      }
     }
 
     // Check lockout
@@ -41,7 +51,7 @@ exports.login = async (req, res) => {
     // Success - reset attempts
     await user.update({ failed_login_attempts: 0, locked_until: null, last_login: new Date() });
 
-    const payload = { userId: user.id, schoolId: school.id, role: user.role, username: user.username };
+    const payload = { userId: user.id, schoolId: school ? school.id : user.school_id, role: user.role, username: user.username };
     
     // Default fallback secrets if env vars are missing during tests
     const accessSecret = process.env.JWT_SECRET || 'test_secret';

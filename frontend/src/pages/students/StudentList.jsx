@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../../api/axios';
 import toast, { Toaster } from 'react-hot-toast';
 import { Search, Plus, Filter, MoreVertical, GraduationCap } from 'lucide-react';
+import Owly from '../../components/Owly';
 
 export default function StudentList() {
   const [students, setStudents] = useState([]);
@@ -82,7 +83,15 @@ export default function StudentList() {
               {loading ? (
                 <tr><td colSpan="6" className="text-center py-12 text-gray-500">Loading...</td></tr>
               ) : students.length === 0 ? (
-                <tr><td colSpan="6" className="text-center py-12 text-gray-500">No students found.</td></tr>
+                <tr>
+                  <td colSpan="6">
+                    <div className="flex flex-col items-center py-16 text-gray-400">
+                      <Owly size={120} />
+                      <p className="mt-4 text-lg font-medium text-gray-600">No students found</p>
+                      <p className="text-sm">Add your first student to get started</p>
+                    </div>
+                  </td>
+                </tr>
               ) : (
                 students.map(student => (
                   <tr key={student.id} className="hover:bg-gray-50 transition">

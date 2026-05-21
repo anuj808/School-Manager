@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { Users, Plus } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import Owly from '../../components/Owly';
 
 export default function StaffDirectory() {
   const [staff, setStaff] = useState([]);
@@ -67,7 +68,17 @@ export default function StaffDirectory() {
                 <td className="px-6 py-4 font-bold text-gray-900">${s.salary_basic}</td>
               </tr>
             ))}
-            {staff.length === 0 && <tr><td colSpan="4" className="text-center py-8 text-gray-500">No staff records found.</td></tr>}
+            {staff.length === 0 && (
+              <tr>
+                <td colSpan="4">
+                  <div className="flex flex-col items-center py-16 text-gray-400">
+                    <Owly size={120} />
+                    <p className="mt-4 text-lg font-medium text-gray-600">No staff found</p>
+                    <p className="text-sm">Add your first staff member to get started</p>
+                  </div>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

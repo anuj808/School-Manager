@@ -4,6 +4,7 @@ import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import toast, { Toaster } from 'react-hot-toast';
 import { FileText, Plus, CheckCircle, Clock } from 'lucide-react';
+import Owly from '../../components/Owly';
 
 export default function ExamList() {
   const { user } = useAuth();
@@ -82,7 +83,13 @@ export default function ExamList() {
             </div>
           </div>
         ))}
-        {exams.length === 0 && <p className="text-gray-500 col-span-3">No exams found. Create one to get started.</p>}
+        {exams.length === 0 && (
+          <div className="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col items-center py-16 text-gray-400">
+            <Owly size={120} />
+            <p className="mt-4 text-lg font-medium text-gray-600">No exams found</p>
+            <p className="text-sm">Create your first exam to get started</p>
+          </div>
+        )}
       </div>
 
       {showModal && (
